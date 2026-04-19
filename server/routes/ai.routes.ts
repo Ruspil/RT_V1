@@ -7,12 +7,12 @@ export const aiRouter = Router();
 
 /**
  * Auth policy:
- *  - Production / when explicitly required → strict auth.
- *  - Development → optional auth, so the plan personaliser can be tested
- *    without first creating an account. Set AI_REQUIRE_AUTH=1 in `.env` to
- *    force strict auth in dev too.
+ *  - AI_REQUIRE_AUTH="0" → auth disabled (anonymous allowed), even in production.
+ *  - AI_REQUIRE_AUTH="1" → auth required, even in development.
+ *  - Otherwise → required in production, optional in development (default).
  */
-const requireAuth = process.env.AI_REQUIRE_AUTH === "1" || process.env.NODE_ENV === "production";
+const flag = process.env.AI_REQUIRE_AUTH;
+const requireAuth = flag === "1" || (flag !== "0" && process.env.NODE_ENV === "production");
 const aiAuth = requireAuth ? authMiddleware : optionalAuthMiddleware;
 
 aiRouter.post("/chat", aiAuth, aiLimiter, ai.postChat);
